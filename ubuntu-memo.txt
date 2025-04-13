@@ -1,0 +1,77 @@
+■デフォルトのキーボードレイアウトを日本語に
+・確認
+localectl status
+
+・設定
+sudo localectl set-keymap jp
+sudo localectl set-x11-keymap jp
+
+・↑でうまくいかなかった場合
+sudo nano /etc/default/keyboard
+----------------------------
+XKBMODEL="pc105"
+XKBLAYOUT="jp"
+XKBVARIANT=""
+XKBOPTIONS=""
+----------------------------
+
+■日本語入力環境（IME）の設定
+mozc + fcitx5 または ibus をインストール＆有効化しておく。
+GUIで 日本語 - Mozc を追加して US を削除すると良い。
+以下を/etc/skel/.xprofile や .profile に書いておくと、新規ユーザーに引き継がれます。
+----------------------------
+export GTK_IM_MODULE=fcitx
+export QT_IM_MODULE=fcitx
+export XMODIFIERS="@im=fcitx"
+----------------------------
+
+■Torのお気に入りファイルを編集して配布
+Browser/TorBrowser/Data/Browser/profile.default
+
+Torブラウザを1回起動してブックマークを手動で設定。
+profile.default/places.sqlite をコピーして保存しておく。
+それを配布用Torブラウザの同じ場所に上書きする。
+
+
+■.desktopファイルを修正
+---------------------------
+[Desktop Entry]
+Type=Application
+Name=Tor Browser
+GenericName=Web Browser
+Comment=Tor Browser is +1 for privacy and ?1 for mass surveillance
+Categories=Network;WebBrowser;Security;
+Exec=/opt/tor-browser-linux-x86_64-14.0.9/tor-browser/Browser/start-tor-browser --detach
+Icon=/opt/tor-browser-linux-x86_64-14.0.9/tor-browser/Browser/browser/chrome/icons/default/default128.png
+StartupNotify=true
+StartupWMClass=Tor Browser
+---------------------------
+
+sudo chmod -R 755 /opt/tor-browser-linux-x86_64-14.0.9
+
+■既存ユーザー向け
+sudo cp /usr/share/applications/start-tor-browser.desktop /home/username/Desktop/
+sudo chown username:username /home/username/Desktop/start-tor-browser.desktop
+chmod +x /home/username/Desktop/start-tor-browser.desktop
+gio set /home/username/Desktop/start-tor-browser.desktop "metadata::trusted" true
+
+■全ユーザのデスクトップにコピー
+sudo cp /usr/share/applications/start-tor-browser.desktop /etc/skel/Desktop/
+sudo chmod +x /etc/skel/Desktop/start-tor-browser.desktop
+
+・/etc/skel に .desktop ファイルと一緒に 初回起動スクリプトを入れる
+sudo mkdir -p /etc/skel/.config/autostart
+・自動実行用 .desktop ファイルを /etc/skel/.config/autostart/ に作成（例: trust-tor.desktop）
+-----------------------
+[Desktop Entry]
+Type=Application
+Exec=gio set ~/Desktop/start-tor-browser.desktop "metadata::trusted" true && rm ~/.config/autostart/trust-tor.desktop
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+Name=Trust Tor Launcher
+Comment=Mark Tor Browser shortcut as trusted
+-----------------------
+
+sudo adduser username
+sudo adduser username sudo
